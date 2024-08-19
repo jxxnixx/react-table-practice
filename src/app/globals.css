@@ -17,6 +17,7 @@
 }
 
 body {
+  font-family: Arial, sans-serif;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
@@ -30,4 +31,20 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #838383;
 }
