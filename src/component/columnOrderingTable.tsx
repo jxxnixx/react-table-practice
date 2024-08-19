@@ -124,11 +124,6 @@ const ColumnOrderingTable = ({ initialData }: Props) => {
 
   return (
     <div className="p-2">
-      <br />
-      <br />
-      <br />
-      <br />
-
       <div className="inline-block border border-black shadow rounded">
         <div className="px-1 border-b border-black">
           <label>
@@ -209,7 +204,7 @@ const ColumnOrderingTable = ({ initialData }: Props) => {
           ))}
         </tfoot> */}
       </table>
-      <pre>{JSON.stringify(table.getState().columnOrder, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(table.getState().columnOrder, null, 2)}</pre> */}
     </div>
   );
 };
