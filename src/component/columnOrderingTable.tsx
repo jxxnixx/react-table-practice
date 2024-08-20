@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ColumnDef,
@@ -6,101 +6,102 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from '@tanstack/react-table';
-import React from 'react';
-import { PushAlert } from './type';
+} from "@tanstack/react-table";
+import React from "react";
+import { PushAlert } from "./type";
 
 const defaultColumns: ColumnDef<PushAlert>[] = [
   {
-    header: 'Alert Details',
+    header: "Alert Details",
     footer: (props) => props.column.id,
     columns: [
       {
-        accessorKey: 'title',
+        accessorKey: "title",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Title',
+        header: "Title",
       },
       {
-        accessorKey: 'frequency',
+        accessorKey: "frequency",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Frequency',
+        header: "Frequency",
       },
       {
-        accessorKey: 'status',
+        accessorKey: "status",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Status',
+        header: "Status",
       },
     ],
   },
   {
-    header: 'Dates',
+    header: "Dates",
     footer: (props) => props.column.id,
     columns: [
       {
-        accessorKey: 'startDate',
+        accessorKey: "startDate",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Start Date',
+        header: "Start Date",
       },
       {
-        accessorKey: 'endDate',
+        accessorKey: "endDate",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'End Date',
+        header: "End Date",
       },
     ],
   },
   {
-    header: 'Metrics',
+    header: "Metrics",
     footer: (props) => props.column.id,
     columns: [
       {
-        accessorKey: 'sent',
+        accessorKey: "sent",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Sent',
+        header: "Sent",
       },
       {
-        accessorKey: 'openRatio',
+        accessorKey: "openRatio",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'Open Ratio',
+        header: "Open Ratio",
       },
     ],
   },
   {
-    header: 'Platform',
+    header: "Platform",
     footer: (props) => props.column.id,
     columns: [
       {
-        accessorKey: 'OS',
+        accessorKey: "OS",
         cell: (info) => info.getValue(),
         footer: (props) => props.column.id,
-        header: 'OS',
+        header: "OS",
       },
     ],
   },
 ];
 
 type Props = {
-  initialData: PushAlert[];
+  data: PushAlert[];
 };
 
-const ColumnOrderingTable = ({ initialData }: Props) => {
-  const [data, setData] = React.useState(() => initialData);
+const ColumnOrderingTable = ({ data }: Props) => {
+  const [tableData, setTableData] = React.useState(() => data);
   const [columns] = React.useState(() => [...defaultColumns]);
 
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([]);
 
-  const rerender = () => setData(() => initialData);
+  const rerender = () => setTableData(() => data);
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
+    filterFns: {},
     state: {
       columnVisibility,
       columnOrder,
@@ -123,23 +124,23 @@ const ColumnOrderingTable = ({ initialData }: Props) => {
   };
 
   return (
-    <div className="p-2">
-      <div className="inline-block border border-black shadow rounded">
-        <div className="px-1 border-b border-black">
+    <div className='p-2'>
+      <div className='inline-block border border-black shadow rounded'>
+        <div className='px-1 border-b border-black'>
           <label>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={table.getIsAllColumnsVisible()}
               onChange={table.getToggleAllColumnsVisibilityHandler()}
-            />{' '}
+            />{" "}
             Toggle All
           </label>
         </div>
         {table.getAllLeafColumns().map((column) => (
-          <div key={column.id} className="px-1">
+          <div key={column.id} className='px-1'>
             <label>
               <input
-                type="checkbox"
+                type='checkbox'
                 checked={column.getIsVisible()}
                 onChange={column.getToggleVisibilityHandler()}
               />
@@ -149,16 +150,16 @@ const ColumnOrderingTable = ({ initialData }: Props) => {
         ))}
       </div>
       <br />
-      <div className="h-4" />
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => rerender()} className="border p-1">
+      <div className='h-4' />
+      <div className='flex flex-wrap gap-2'>
+        <button onClick={() => rerender()} className='border p-1'>
           Regenerate
         </button>
-        <button onClick={() => randomizeColumns()} className="border p-1">
+        <button onClick={() => randomizeColumns()} className='border p-1'>
           Shuffle Columns
         </button>
       </div>
-      <div className="h-4" />
+      <div className='h-4' />
       <table>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
