@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { CSSProperties } from 'react';
+import React, { CSSProperties } from "react";
 import {
   Cell,
   ColumnDef,
@@ -8,7 +8,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   DndContext,
   KeyboardSensor,
@@ -18,55 +18,16 @@ import {
   type DragEndEvent,
   useSensor,
   useSensors,
-} from '@dnd-kit/core';
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
+} from "@dnd-kit/core";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import {
   arrayMove,
   SortableContext,
   horizontalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-
-interface PushAlert {
-  title: string;
-  frequency: string;
-  status: string;
-  startDate: string;
-  endDate: string;
-  sent: number;
-  openRatio: number;
-  OS: string;
-}
-
-// const columns: ColumnDef<PushAlert>[] = [
-//   {
-//     header: 'Alert Details',
-//     columns: [
-//       { accessorKey: 'title', header: 'Title' },
-//       { accessorKey: 'frequency', header: 'Frequency' },
-//       { accessorKey: 'status', header: 'Status' },
-//     ],
-//   },
-//   {
-//     header: 'Dates',
-//     columns: [
-//       { accessorKey: 'startDate', header: 'Start Date' },
-//       { accessorKey: 'endDate', header: 'End Date' },
-//     ],
-//   },
-//   {
-//     header: 'Metrics',
-//     columns: [
-//       { accessorKey: 'sent', header: 'Sent' },
-//       { accessorKey: 'openRatio', header: 'Open Ratio' },
-//     ],
-//   },
-//   {
-//     header: 'Platform',
-//     columns: [{ accessorKey: 'OS', header: 'OS' }],
-//   },
-// ];
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { PushAlert } from "./type";
 
 const DraggableTableHeader = ({
   header,
@@ -80,10 +41,10 @@ const DraggableTableHeader = ({
 
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
-    position: 'relative',
+    position: "relative",
     transform: CSS.Translate.toString(transform), // translate instead of transform to avoid squishing
-    transition: 'width transform 0.2s ease-in-out',
-    whiteSpace: 'nowrap',
+    transition: "width transform 0.2s ease-in-out",
+    whiteSpace: "nowrap",
     width: header.column.getSize(),
     zIndex: isDragging ? 1 : 0,
   };
@@ -107,9 +68,9 @@ const DragAlongCell = ({ cell }: { cell: Cell<PushAlert, unknown> }) => {
 
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
-    position: 'relative',
+    position: "relative",
     transform: CSS.Translate.toString(transform), // translate instead of transform to avoid squishing
-    transition: 'width transform 0.2s ease-in-out',
+    transition: "width transform 0.2s ease-in-out",
     width: cell.column.getSize(),
     zIndex: isDragging ? 1 : 0,
   };
@@ -125,51 +86,51 @@ const ColumnDnDTable = ({ data }: { data: PushAlert[] }) => {
   const columns = React.useMemo<ColumnDef<PushAlert>[]>(
     () => [
       {
-        accessorKey: 'title',
-        header: 'Title',
-        id: 'title',
+        accessorKey: "title",
+        header: "Title",
+        id: "title",
         size: 150,
       },
       {
-        accessorKey: 'frequency',
-        header: 'Frequency',
-        id: 'frequency',
+        accessorKey: "frequency",
+        header: "Frequency",
+        id: "frequency",
         size: 150,
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
-        id: 'status',
+        accessorKey: "status",
+        header: "Status",
+        id: "status",
         size: 120,
       },
       {
-        accessorKey: 'startDate',
-        header: 'Start Date',
-        id: 'startDate',
+        accessorKey: "startDate",
+        header: "Start Date",
+        id: "startDate",
         size: 120,
       },
       {
-        accessorKey: 'endDate',
-        header: 'End Date',
-        id: 'endDate',
+        accessorKey: "endDate",
+        header: "End Date",
+        id: "endDate",
         size: 120,
       },
       {
-        accessorKey: 'sent',
-        header: 'Sent',
-        id: 'sent',
+        accessorKey: "sent",
+        header: "Sent",
+        id: "sent",
         size: 120,
       },
       {
-        accessorKey: 'openRatio',
-        header: 'Open Ratio',
-        id: 'openRatio',
+        accessorKey: "openRatio",
+        header: "Open Ratio",
+        id: "openRatio",
         size: 120,
       },
       {
-        accessorKey: 'OS',
-        header: 'OS',
-        id: 'OS',
+        accessorKey: "OS",
+        header: "OS",
+        id: "OS",
         size: 120,
       },
     ],
@@ -185,6 +146,7 @@ const ColumnDnDTable = ({ data }: { data: PushAlert[] }) => {
   const table = useReactTable({
     data: tableData,
     columns,
+    filterFns: {},
     getCoreRowModel: getCoreRowModel(),
     state: {
       columnOrder,
@@ -218,24 +180,22 @@ const ColumnDnDTable = ({ data }: { data: PushAlert[] }) => {
       collisionDetection={closestCenter}
       modifiers={[restrictToHorizontalAxis]}
       onDragEnd={handleDragEnd}
-      sensors={sensors}
-    >
-      <div className="p-2">
-        <div className="h-4" />
-        <div className="flex flex-wrap gap-2">
-          <button onClick={() => setTableData(data)} className="border p-1">
+      sensors={sensors}>
+      <div className='p-2'>
+        <div className='h-4' />
+        <div className='flex flex-wrap gap-2'>
+          <button onClick={() => setTableData(data)} className='border p-1'>
             Regenerate
           </button>
         </div>
-        <div className="h-4" />
+        <div className='h-4' />
         <table>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 <SortableContext
                   items={columnOrder}
-                  strategy={horizontalListSortingStrategy}
-                >
+                  strategy={horizontalListSortingStrategy}>
                   {headerGroup.headers.map((header) => (
                     <DraggableTableHeader key={header.id} header={header} />
                   ))}
@@ -250,8 +210,7 @@ const ColumnDnDTable = ({ data }: { data: PushAlert[] }) => {
                   <SortableContext
                     key={cell.id}
                     items={columnOrder}
-                    strategy={horizontalListSortingStrategy}
-                  >
+                    strategy={horizontalListSortingStrategy}>
                     <DragAlongCell key={cell.id} cell={cell} />
                   </SortableContext>
                 ))}
