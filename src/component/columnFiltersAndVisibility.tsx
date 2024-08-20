@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -17,6 +17,111 @@ declare module "@tanstack/react-table" {
   interface ColumnMeta<TData extends object, TValue> {
     filterVariant?: "text" | "range" | "select";
   }
+}
+
+function Filter({
+  column,
+  uniqueFrequencies,
+  uniqueStatuses,
+  uniqueOS,
+}: {
+  column: Column<any, unknown>;
+  uniqueFrequencies: string[];
+  uniqueStatuses: string[];
+  uniqueOS: string[];
+}) {
+  const columnFilterValue = column.getFilterValue();
+  const { filterVariant } = column.columnDef.meta ?? {};
+
+  return filterVariant === "range" ? (
+    <div className='flex space-x-2'>
+      <DebouncedInput
+        type='number'
+        value={(columnFilterValue as [number, number])?.[0] ?? ""}
+        onChange={(value) =>
+          column.setFilterValue((old: [number, number]) => [value, old?.[1]])
+        }
+        placeholder={`Min`}
+        className='w-24 border shadow rounded'
+      />
+      <DebouncedInput
+        type='number'
+        value={(columnFilterValue as [number, number])?.[1] ?? ""}
+        onChange={(value) =>
+          column.setFilterValue((old: [number, number]) => [old?.[0], value])
+        }
+        placeholder={`Max`}
+        className='w-24 border shadow rounded'
+      />
+    </div>
+  ) : filterVariant === "select" ? (
+    <select
+      onChange={(e) => column.setFilterValue(e.target.value)}
+      value={columnFilterValue?.toString() ?? ""}
+      className='w-full border shadow rounded'>
+      <option value=''>All</option>
+      {/* 옵션은 해당 열의 데이터에서 동적으로 생성 */}
+      {column.id === "frequency" &&
+        uniqueFrequencies.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      {column.id === "status" &&
+        uniqueStatuses.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      {column.id === "OS" &&
+        uniqueOS.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+    </select>
+  ) : (
+    <DebouncedInput
+      type='text'
+      value={(columnFilterValue ?? "") as string}
+      onChange={(value) => column.setFilterValue(value)}
+      placeholder={`Search...`}
+      className='w-full border shadow rounded'
+    />
+  );
+}
+
+function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: {
+  value: string | number;
+  onChange: (value: string | number) => void;
+  debounce?: number;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+  const [value, setValue] = useState(initialValue);
+
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value);
+    }, debounce);
+
+    return () => clearTimeout(timeout);
+  }, [value, debounce, onChange]);
+
+  return (
+    <input
+      {...props}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
+  );
 }
 
 type ColumnFiltersAndVisibilityTableProps = {
@@ -206,110 +311,5 @@ const ColumnFiltersAndVisibilityTable: React.FC<
     </div>
   );
 };
-
-function Filter({
-  column,
-  uniqueFrequencies,
-  uniqueStatuses,
-  uniqueOS,
-}: {
-  column: Column<any, unknown>;
-  uniqueFrequencies: string[];
-  uniqueStatuses: string[];
-  uniqueOS: string[];
-}) {
-  const columnFilterValue = column.getFilterValue();
-  const { filterVariant } = column.columnDef.meta ?? {};
-
-  return filterVariant === "range" ? (
-    <div className='flex space-x-2'>
-      <DebouncedInput
-        type='number'
-        value={(columnFilterValue as [number, number])?.[0] ?? ""}
-        onChange={(value) =>
-          column.setFilterValue((old: [number, number]) => [value, old?.[1]])
-        }
-        placeholder={`Min`}
-        className='w-24 border shadow rounded'
-      />
-      <DebouncedInput
-        type='number'
-        value={(columnFilterValue as [number, number])?.[1] ?? ""}
-        onChange={(value) =>
-          column.setFilterValue((old: [number, number]) => [old?.[0], value])
-        }
-        placeholder={`Max`}
-        className='w-24 border shadow rounded'
-      />
-    </div>
-  ) : filterVariant === "select" ? (
-    <select
-      onChange={(e) => column.setFilterValue(e.target.value)}
-      value={columnFilterValue?.toString() ?? ""}
-      className='w-full border shadow rounded'>
-      <option value=''>All</option>
-      {/* 옵션은 해당 열의 데이터에서 동적으로 생성 */}
-      {column.id === "frequency" &&
-        uniqueFrequencies.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      {column.id === "status" &&
-        uniqueStatuses.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      {column.id === "OS" &&
-        uniqueOS.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-    </select>
-  ) : (
-    <DebouncedInput
-      type='text'
-      value={(columnFilterValue ?? "") as string}
-      onChange={(value) => column.setFilterValue(value)}
-      placeholder={`Search...`}
-      className='w-full border shadow rounded'
-    />
-  );
-}
-
-function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number;
-  onChange: (value: string | number) => void;
-  debounce?: number;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
-  const [value, setValue] = useState(initialValue);
-
-  React.useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
-
-  React.useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value);
-    }, debounce);
-
-    return () => clearTimeout(timeout);
-  }, [value, debounce, onChange]);
-
-  return (
-    <input
-      {...props}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-    />
-  );
-}
 
 export default ColumnFiltersAndVisibilityTable;

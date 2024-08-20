@@ -39,6 +39,10 @@ const DraggableTableHeader = ({
       id: header.column.id,
     });
 
+  console.log("attributes:", attributes);
+  console.log("listeners:", listeners);
+  console.log("isDragging:", isDragging);
+
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
     position: "relative",
