@@ -1,7 +1,9 @@
-import React from "react";
+import React from 'react';
+import MaterialTable from '@/component/materialTable';
+import { staticData } from '@/component/data';
 
 const page = () => {
-  return <div>page</div>;
+  return <MaterialTable data={staticData} />;
 };
 
 export default page;
