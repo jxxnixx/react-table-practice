@@ -2,19 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  closestCenter,
-  type DragEndEvent,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
-import { arrayMove } from '@dnd-kit/sortable';
-
-import {
   MaterialReactTable,
   type MRT_ColumnDef,
   useMaterialReactTable,
@@ -26,13 +13,12 @@ type MaterialTableProps = {
   data: PushAlert[];
 };
 
-const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
-  const uniqueFrequencies = Array.from(
-    new Set(data.map((item) => item.frequency))
-  );
-  const uniqueStatuses = Array.from(new Set(data.map((item) => item.status)));
-  const uniqueOS = Array.from(new Set(data.flatMap((item) => item.OS)));
+// TODO : 포맷 함수를 이용하면, filtering이 include로 동작하지 않음.
+// filter에서 아예 제외되는 듯. 기준이 표에 나와있는 형태인가? 절대적인 것 같지는 않은데 아직 좀 더 테스트 필요
+const formatNumber = (num: number) => new Intl.NumberFormat().format(num);
+const formatPercentage = (num: number) => `${(num * 100).toFixed(2)}%`;
 
+const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
   const columns = useMemo<MRT_ColumnDef<PushAlert, any>[]>(
     () => [
       {
@@ -92,75 +78,44 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
       {
         id: 'sent',
         accessorKey: 'sent',
+        // accessorFn: (row) => row.sent, // 필터링에 사용할 원본 숫자
         header: 'Sent',
         meta: {
           filterVariant: 'range',
         },
         size: 120,
+        // Cell: ({ cell }) => formatNumber(cell.getValue() as number), // 포맷된 값 표시
       },
       {
         id: 'openRatio',
         accessorKey: 'openRatio',
+        // accessorFn: (row) => row.openRatio, // 원본 비율값
         header: 'Open Ratio',
         meta: {
           filterVariant: 'range',
         },
         size: 120,
+        // Cell: ({ cell }) => formatPercentage(cell.getValue() as number), // 포맷된 값 표시
       },
     ],
-    [uniqueFrequencies, uniqueStatuses, uniqueOS]
-  );
-
-  const [columnOrder, setColumnOrder] = useState<string[]>(() =>
-    columns.map((c) => c.id!)
+    []
   );
 
   const table = useMaterialReactTable({
     data,
     columns,
-    debugTable: true,
-    debugHeaders: true,
-    debugColumns: true,
-    state: {
-      columnOrder,
+    initialState: {
+      showColumnFilters: true,
     },
-    onColumnOrderChange: setColumnOrder,
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      setColumnOrder((columnOrder) => {
-        const oldIndex = columnOrder.indexOf(active.id as string);
-        const newIndex = columnOrder.indexOf(over.id as string);
-        return arrayMove(columnOrder, oldIndex, newIndex);
-      });
-    }
-  }
-
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
-
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      modifiers={[restrictToHorizontalAxis]}
-      onDragEnd={handleDragEnd}
-      sensors={sensors}
-    >
-      <div className="p-4">
-        <MaterialReactTable columns={columns} data={data} />
-
-        <div className="p-4">
-          <span>Filtered Rows: {filteredRowCount}</span>
-        </div>
-      </div>
-    </DndContext>
+    <div className="p-4">
+      <MaterialReactTable table={table} />
+      <span>Filtered Rows: {filteredRowCount}</span>
+    </div>
   );
 };
 
