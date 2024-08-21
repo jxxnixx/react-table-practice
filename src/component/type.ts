@@ -5,7 +5,7 @@ export type PushAlert = {
   status: string;
   startDate: string;
   endDate: string;
-  OS: string;
+  OS: string[];
   sent: number;
   openRatio: number;
 };

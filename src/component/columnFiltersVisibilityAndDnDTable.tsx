@@ -33,7 +33,18 @@ import {
 } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { PushAlert } from './type';
+
+type PushAlert = {
+  id: number;
+  title: string;
+  frequency: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  OS: string[];
+  sent: number;
+  openRatio: number;
+};
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends object, TValue> {
@@ -57,11 +68,6 @@ const DraggableSortableTableHeader = ({
       id: header.column.id,
     });
 
-  // 디버깅용 로그 출력
-  console.log('attributes:', attributes);
-  console.log('listeners:', listeners);
-  console.log('isDragging:', isDragging);
-
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
     position: 'relative',
@@ -75,7 +81,7 @@ const DraggableSortableTableHeader = ({
   return (
     <th
       colSpan={header.colSpan}
-      ref={setNodeRef} // 전체 헤더 셀을 드래그 가능하게 만듭니다.
+      ref={setNodeRef}
       style={style}
       className="px-4 py-2 border"
     >
@@ -129,7 +135,7 @@ const DragAlongCell = ({ cell }: { cell: Cell<PushAlert, unknown> }) => {
   const style: CSSProperties = {
     opacity: isDragging ? 0.8 : 1,
     position: 'relative',
-    transform: CSS.Translate.toString(transform), // translate instead of transform to avoid squishing
+    transform: CSS.Translate.toString(transform),
     transition: 'width transform 0.2s ease-in-out',
     width: cell.column.getSize(),
     zIndex: isDragging ? 1 : 0,
@@ -155,6 +161,14 @@ function Filter({
 }) {
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value
+    );
+    column.setFilterValue(value);
+  };
 
   return filterVariant === 'range' ? (
     <div className="flex space-x-2">
@@ -184,7 +198,6 @@ function Filter({
       className="w-full border shadow rounded"
     >
       <option value="">All</option>
-      {/* 옵션은 해당 열의 데이터에서 동적으로 생성 */}
       {column.id === 'frequency' &&
         uniqueFrequencies.map((option) => (
           <option key={option} value={option}>
@@ -228,7 +241,7 @@ function DebouncedInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setValue(newValue);
-    onChange(newValue); // 입력이 발생할 때마다 즉시 onChange 호출
+    onChange(newValue);
   };
 
   return <input {...props} value={value} onChange={handleChange} />;
@@ -241,12 +254,11 @@ type ColumnFiltersAndVisibilityTableProps = {
 const ColumnFiltersAndVisibilityTable: React.FC<
   ColumnFiltersAndVisibilityTableProps
 > = ({ data }) => {
-  // Extract unique values for select options
   const uniqueFrequencies = Array.from(
     new Set(data.map((item) => item.frequency))
   );
   const uniqueStatuses = Array.from(new Set(data.map((item) => item.status)));
-  const uniqueOS = Array.from(new Set(data.map((item) => item.OS)));
+  const uniqueOS = Array.from(new Set(data.flatMap((item) => item.OS)));
 
   const columns = useMemo<ColumnDef<PushAlert, any>[]>(
     () => [
@@ -338,7 +350,7 @@ const ColumnFiltersAndVisibilityTable: React.FC<
   const table = useReactTable({
     data,
     columns,
-    filterFns: {}, // 필수 속성으로 빈 객체라도 전달해야 함
+    filterFns: {},
     state: {
       columnFilters,
       columnVisibility,
@@ -359,14 +371,15 @@ const ColumnFiltersAndVisibilityTable: React.FC<
     debugColumns: true,
   });
 
-  // reorder columns after drag & drop
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setColumnOrder((columnOrder) => {
         const oldIndex = columnOrder.indexOf(active.id as string);
         const newIndex = columnOrder.indexOf(over.id as string);
-        return arrayMove(columnOrder, oldIndex, newIndex); //this is just a splice util
+        return arrayMove(columnOrder, oldIndex, newIndex);
       });
     }
   }
@@ -385,7 +398,6 @@ const ColumnFiltersAndVisibilityTable: React.FC<
       sensors={sensors}
     >
       <div className="p-4">
-        {/* Column Visibility Controls */}
         <div className="inline-block border border-black shadow rounded mb-4">
           <div className="px-1 border-b border-black">
             <label>
@@ -411,7 +423,6 @@ const ColumnFiltersAndVisibilityTable: React.FC<
           ))}
         </div>
 
-        {/* Table with Column Filters */}
         <table className="min-w-full table-auto">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -449,24 +460,80 @@ const ColumnFiltersAndVisibilityTable: React.FC<
             ))}
           </tbody>
         </table>
-        <div className="flex justify-between items-center mt-4">
+        <div className="mt-4">
+          <span>Filtered Rows: {filteredRowCount}</span>
+        </div>
+
+        <div className="h-2" />
+        <div className="flex items-center gap-10">
           <button
+            className="border rounded p-1"
+            onClick={() => table.firstPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            {'<<'}
+          </button>
+
+          <button
+            className="border rounded p-1"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            {'<'}
           </button>
-          <span>
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
-          </span>
           <button
+            className="border rounded p-1"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            {'>'}
           </button>
+          <button
+            className="border rounded p-1"
+            onClick={() => table.lastPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            {'>>'}
+          </button>
+          <span className="flex items-center gap-1">
+            <div>Page</div>
+            <strong>
+              {table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getPageCount().toLocaleString()}
+            </strong>
+          </span>
+          <span className="flex items-center gap-1">
+            | Go to page:
+            <input
+              type="number"
+              min="1"
+              max={table.getPageCount()}
+              defaultValue={table.getState().pagination.pageIndex + 1}
+              onChange={(e) => {
+                const page = e.target.value ? Number(e.target.value) - 1 : 0;
+                table.setPageIndex(page);
+              }}
+              className="border p-1 rounded w-16"
+            />
+          </span>
+          <select
+            value={table.getState().pagination.pageSize}
+            onChange={(e) => {
+              table.setPageSize(Number(e.target.value));
+            }}
+          >
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <option key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </option>
+            ))}
+          </select>
         </div>
+        <div>
+          Showing {table.getRowModel().rows.length.toLocaleString()} of{' '}
+          {table.getRowCount().toLocaleString()} Rows
+        </div>
+        <pre>{JSON.stringify(table.getState().pagination, null, 2)}</pre>
       </div>
     </DndContext>
   );
