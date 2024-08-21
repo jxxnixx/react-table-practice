@@ -48,3 +48,8 @@ td {
 th {
   background-color: #838383;
 }
+
+input,
+select {
+  color: black;
+}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -10,12 +10,15 @@ import {
   getPaginationRowModel,
   useReactTable,
   Column,
-} from "@tanstack/react-table";
-import { PushAlert } from "./type";
+  SortingFn,
+  SortingState,
+  getSortedRowModel,
+} from '@tanstack/react-table';
+import { PushAlert } from './type';
 
-declare module "@tanstack/react-table" {
+declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends object, TValue> {
-    filterVariant?: "text" | "range" | "select";
+    filterVariant?: 'text' | 'range' | 'select';
   }
 }
 
@@ -33,47 +36,48 @@ function Filter({
   const columnFilterValue = column.getFilterValue();
   const { filterVariant } = column.columnDef.meta ?? {};
 
-  return filterVariant === "range" ? (
-    <div className='flex space-x-2'>
+  return filterVariant === 'range' ? (
+    <div className="flex space-x-2">
       <DebouncedInput
-        type='number'
-        value={(columnFilterValue as [number, number])?.[0] ?? ""}
+        type="number"
+        value={(columnFilterValue as [number, number])?.[0] ?? ''}
         onChange={(value) =>
           column.setFilterValue((old: [number, number]) => [value, old?.[1]])
         }
         placeholder={`Min`}
-        className='w-24 border shadow rounded'
+        className="w-24 border shadow rounded"
       />
       <DebouncedInput
-        type='number'
-        value={(columnFilterValue as [number, number])?.[1] ?? ""}
+        type="number"
+        value={(columnFilterValue as [number, number])?.[1] ?? ''}
         onChange={(value) =>
           column.setFilterValue((old: [number, number]) => [old?.[0], value])
         }
         placeholder={`Max`}
-        className='w-24 border shadow rounded'
+        className="w-24 border shadow rounded"
       />
     </div>
-  ) : filterVariant === "select" ? (
+  ) : filterVariant === 'select' ? (
     <select
       onChange={(e) => column.setFilterValue(e.target.value)}
-      value={columnFilterValue?.toString() ?? ""}
-      className='w-full border shadow rounded'>
-      <option value=''>All</option>
+      value={columnFilterValue?.toString() ?? ''}
+      className="w-full border shadow rounded"
+    >
+      <option value="">All</option>
       {/* 옵션은 해당 열의 데이터에서 동적으로 생성 */}
-      {column.id === "frequency" &&
+      {column.id === 'frequency' &&
         uniqueFrequencies.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>
         ))}
-      {column.id === "status" &&
+      {column.id === 'status' &&
         uniqueStatuses.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>
         ))}
-      {column.id === "OS" &&
+      {column.id === 'OS' &&
         uniqueOS.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -82,11 +86,11 @@ function Filter({
     </select>
   ) : (
     <DebouncedInput
-      type='text'
-      value={(columnFilterValue ?? "") as string}
+      type="text"
+      value={(columnFilterValue ?? '') as string}
       onChange={(value) => column.setFilterValue(value)}
       placeholder={`Search...`}
-      className='w-full border shadow rounded'
+      className="w-full border shadow rounded"
     />
   );
 }
@@ -100,7 +104,7 @@ function DebouncedInput({
   value: string | number;
   onChange: (value: string | number) => void;
   debounce?: number;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
   const [value, setValue] = useState(initialValue);
 
   useEffect(() => {
@@ -135,6 +139,7 @@ const ColumnFiltersAndVisibilityTable: React.FC<
   const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(
     {}
   );
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Extract unique values for select options
   const uniqueFrequencies = Array.from(
@@ -146,59 +151,59 @@ const ColumnFiltersAndVisibilityTable: React.FC<
   const columns = useMemo<ColumnDef<PushAlert, any>[]>(
     () => [
       {
-        accessorKey: "title",
-        header: "Title",
+        accessorKey: 'title',
+        header: 'Title',
         meta: {
-          filterVariant: "text",
+          filterVariant: 'text',
         },
       },
       {
-        accessorKey: "frequency",
-        header: "Frequency",
+        accessorKey: 'frequency',
+        header: 'Frequency',
         meta: {
-          filterVariant: "select",
+          filterVariant: 'select',
         },
       },
       {
-        accessorKey: "status",
-        header: "Status",
+        accessorKey: 'status',
+        header: 'Status',
         meta: {
-          filterVariant: "select",
+          filterVariant: 'select',
         },
       },
       {
-        accessorKey: "startDate",
-        header: "Start Date",
+        accessorKey: 'startDate',
+        header: 'Start Date',
         meta: {
-          filterVariant: "text",
+          filterVariant: 'text',
         },
       },
       {
-        accessorKey: "endDate",
-        header: "End Date",
+        accessorKey: 'endDate',
+        header: 'End Date',
         meta: {
-          filterVariant: "text",
+          filterVariant: 'text',
         },
       },
       {
-        accessorKey: "OS",
-        header: "OS",
+        accessorKey: 'OS',
+        header: 'OS',
         meta: {
-          filterVariant: "select",
+          filterVariant: 'select',
         },
       },
       {
-        accessorKey: "sent",
-        header: "Sent",
+        accessorKey: 'sent',
+        header: 'Sent',
         meta: {
-          filterVariant: "range",
+          filterVariant: 'range',
         },
       },
       {
-        accessorKey: "openRatio",
-        header: "Open Ratio",
+        accessorKey: 'openRatio',
+        header: 'Open Ratio',
         meta: {
-          filterVariant: "range",
+          filterVariant: 'range',
         },
       },
     ],
@@ -212,36 +217,39 @@ const ColumnFiltersAndVisibilityTable: React.FC<
     state: {
       columnFilters,
       columnVisibility,
+      sorting,
     },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
-    <div className='p-4'>
+    <div className="p-4">
       {/* Column Visibility Controls */}
-      <div className='inline-block border border-black shadow rounded mb-4'>
-        <div className='px-1 border-b border-black'>
+      <div className="inline-block border border-black shadow rounded mb-4">
+        <div className="px-1 border-b border-black">
           <label>
             <input
-              type='checkbox'
+              type="checkbox"
               checked={table.getIsAllColumnsVisible()}
               onChange={table.getToggleAllColumnsVisibilityHandler()}
-            />{" "}
+            />{' '}
             Toggle All
           </label>
         </div>
         {table.getAllLeafColumns().map((column) => (
-          <div key={column.id} className='px-1'>
+          <div key={column.id} className="px-1">
             <label>
               <input
-                type='checkbox'
+                type="checkbox"
                 checked={column.getIsVisible()}
                 onChange={column.getToggleVisibilityHandler()}
-              />{" "}
+              />{' '}
               {column.id}
             </label>
           </div>
@@ -249,19 +257,39 @@ const ColumnFiltersAndVisibilityTable: React.FC<
       </div>
 
       {/* Table with Column Filters */}
-      <table className='min-w-full table-auto'>
+      <table className="min-w-full table-auto">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <th key={header.id} className='px-4 py-2 border'>
+                <th key={header.id} className="px-4 py-2 border">
                   {header.isPlaceholder ? null : (
                     <>
-                      <div>
+                      <div
+                        className={
+                          header.column.getCanSort()
+                            ? 'cursor-pointer select-none'
+                            : ''
+                        }
+                        onClick={header.column.getToggleSortingHandler()}
+                        title={
+                          header.column.getCanSort()
+                            ? header.column.getNextSortingOrder() === 'asc'
+                              ? 'Sort ascending'
+                              : header.column.getNextSortingOrder() === 'desc'
+                              ? 'Sort descending'
+                              : 'Clear sort'
+                            : undefined
+                        }
+                      >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {{
+                          asc: ' 🔼',
+                          desc: ' 🔽',
+                        }[header.column.getIsSorted() as string] ?? null}
                       </div>
                       {header.column.getCanFilter() ? (
                         <div>
@@ -284,7 +312,7 @@ const ColumnFiltersAndVisibilityTable: React.FC<
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className='px-4 py-2 border'>
+                <td key={cell.id} className="px-4 py-2 border">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}
@@ -292,19 +320,21 @@ const ColumnFiltersAndVisibilityTable: React.FC<
           ))}
         </tbody>
       </table>
-      <div className='flex justify-between items-center mt-4'>
+      <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}>
+          disabled={!table.getCanPreviousPage()}
+        >
           Previous
         </button>
         <span>
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}
         </span>
         <button
           onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}>
+          disabled={!table.getCanNextPage()}
+        >
           Next
         </button>
       </div>
