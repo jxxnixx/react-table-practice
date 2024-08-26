@@ -4,8 +4,13 @@ import React, { useMemo, useState } from 'react';
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
+  MRT_Icons,
+  MRT_Row,
   useMaterialReactTable,
 } from 'material-react-table';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 
 import { PushAlert } from './type';
 
@@ -22,6 +27,15 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
   const columns = useMemo<MRT_ColumnDef<PushAlert, any>[]>(
     () => [
       {
+        id: 'id',
+        accessorKey: 'id',
+        header: 'ID',
+        meta: {
+          filterVariant: 'text',
+        },
+        size: 120,
+      },
+      {
         id: 'title',
         accessorKey: 'title',
         header: 'Title',
@@ -29,6 +43,7 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
           filterVariant: 'text',
         },
         size: 150,
+        // enableColumnOrdering: false,
       },
       {
         id: 'frequency',
@@ -73,7 +88,7 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
         meta: {
           filterVariant: 'checkbox',
         },
-        size: 120,
+        size: 60,
       },
       {
         id: 'sent',
@@ -106,7 +121,30 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
     columns,
     initialState: {
       showColumnFilters: true,
+      // columnPinning: { left: ['id'] },
     },
+    enableColumnOrdering: true,
+    enableRowPinning: true,
+    enableStickyHeader: true,
+    rowPinningDisplayMode: 'top',
+    muiFilterTextFieldProps: ({ column }) => ({
+      // label: `${column.columnDef.header}`,
+      placeholder: `${column.columnDef.header}`,
+      sx: {
+        '& .MuiInputBase-input': {
+          fontSize: '13px',
+        },
+        '& .MuiInputBase-input::placeholder': {
+          fontSize: '13px',
+        },
+      },
+    }),
+    muiTableHeadCellProps: {
+      sx: {
+        fontSize: '15px',
+      },
+    },
+    icons: { PushPinIcon: PushPinOutlinedIcon },
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
