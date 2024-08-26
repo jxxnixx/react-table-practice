@@ -99,7 +99,7 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
           filterVariant: 'range',
         },
         size: 120,
-        // Cell: ({ cell }) => formatNumber(cell.getValue() as number), // 포맷된 값 표시
+        Cell: ({ cell }) => formatNumber(cell.getValue() as number), // 포맷된 값 표시
       },
       {
         id: 'openRatio',
@@ -110,7 +110,7 @@ const MaterialTable: React.FC<MaterialTableProps> = ({ data }) => {
           filterVariant: 'range',
         },
         size: 120,
-        // Cell: ({ cell }) => formatPercentage(cell.getValue() as number), // 포맷된 값 표시
+        Cell: ({ cell }) => formatPercentage(cell.getValue() as number), // 포맷된 값 표시
       },
     ],
     []
